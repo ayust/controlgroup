@@ -59,8 +59,10 @@ def main():
         help="A path to a file to use as input, instead of stdin.")
     parser.add_argument("-o", "--out", metavar="FILEPATH",
         help="A path to a file to use as output, instead of stdout.")
-    parser.add_argument("-p", "--package", action="append",
+    parser.add_argument("-p", "--package", action="append", default=[],
         help="A package to import and make available in expressions (repeatable).")
+    parser.add_argument("--auto", metavar="PACKAGE",
+        help="A package with a 'mapper' and/or 'reducer' function defined to run.")
 
     args = vars(parser.parse_args())
 
@@ -76,6 +78,7 @@ def main():
     else:
         output = sys.stdout
 
+    automodule = __import__(args["auto"]) if args["auto"] else None
     packages = dict((package,__import__(package)) for package in args['package'])
 
     # First, strip the newlines off each line of text
@@ -84,6 +87,8 @@ def main():
     # Then, run a map step, if specified
     if args["map"]:
         result = map_python(args["map"], result, packages)
+    elif hasattr(automodule, 'mapper'):
+        result = itertools.imap(automodule.mapper, result)
 
     if args["skip"]:
         result = (item for item in result if item)
@@ -91,6 +96,8 @@ def main():
     # Then a reduce step, if specified
     if args["reduce"]:
         result = reduce_python(args["reduce"], result, args["accum"], packages)
+    elif hasattr(automodule, 'reducer'):
+        result = reduce(automodule.reducer, result)
 
     # Finally, output the result
     try:
