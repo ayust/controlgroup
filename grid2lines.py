@@ -38,7 +38,7 @@ def possible_lines(grid, diagonals=True):
 
 
 def main():
-    parser = argparse.ArgumentParser("Converts a word search grid into a list of lines.")
+    parser = argparse.ArgumentParser(description="Converts a word search grid into a list of lines.")
     parser.add_argument("-d", "--diagonal", action="store_true",
         help="Include diagonal lines.")
     parser.add_argument("-r", "--reverse", action="store_true",
