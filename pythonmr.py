@@ -32,14 +32,14 @@ import collections
 import itertools
 import sys
 
-def map_python(expr, iterable):
+def map_python(expr, iterable, env):
     def eval_expr(item):
-        return eval(expr, {"item": item})
+        return eval(expr, dict(item=item, **env))
     return itertools.imap(eval_expr, iterable)
 
-def reduce_python(expr, iterable, initial):
+def reduce_python(expr, iterable, initial, env):
     def eval_expr(accum, item):
-        return eval(expr, {"item": item, "accum": accum})
+        return eval(expr, dict(item=item, accum=accum, **env))
     if initial is not None:
         return reduce(eval_expr, iterable, eval(initial))
     else:
@@ -59,6 +59,8 @@ def main():
         help="A path to a file to use as input, instead of stdin.")
     parser.add_argument("-o", "--out", metavar="FILEPATH",
         help="A path to a file to use as output, instead of stdout.")
+    parser.add_argument("-p", "--package", action="append",
+        help="A package to import and make available in expressions (repeatable).")
 
     args = vars(parser.parse_args())
 
@@ -68,31 +70,40 @@ def main():
     else:
         source = sys.stdin
 
+    # Default to stdout as the data sink
+    if args["out"]:
+        output = open(args["out"], "w")
+    else:
+        output = sys.stdout
+
+    packages = dict((package,__import__(package)) for package in args['package'])
+
     # First, strip the newlines off each line of text
     result = itertools.imap(lambda line: line.rstrip("\n"), source)
 
     # Then, run a map step, if specified
     if args["map"]:
-        result = map_python(args["map"], result)
+        result = map_python(args["map"], result, packages)
 
     if args["skip"]:
         result = (item for item in result if item)
 
     # Then a reduce step, if specified
     if args["reduce"]:
-        result = reduce_python(args["reduce"], result, args["accum"])
+        result = reduce_python(args["reduce"], result, args["accum"], packages)
 
     # Finally, output the result
-    if args["out"]:
-        output = open(args["out"], "w")
-    else:
-        output = sys.stdout
-
-    if isinstance(result, collections.Iterable):
-        for item in result:
-            output.write("%s\n" % item)
-    else:
-        output.write("%s\n" % result)
+    try:
+        if isinstance(result, collections.Iterable):
+            for item in result:
+                if isinstance(item, collections.Iterable) and not isinstance(item, (str, unicode)):
+                    item = "\t".join(map(str, item))
+                output.write("%s\n" % item)
+        else:
+            output.write("%s\n" % result)
+    except IOError:
+        # To ignore 'broken pipe' errors
+        pass
 
 
 if __name__ == "__main__":
