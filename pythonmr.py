@@ -45,6 +45,11 @@ def reduce_python(expr, iterable, initial, env):
     else:
         return reduce(eval_expr, iterable)
 
+def filter_python(expr, iterable, env):
+    def eval_expr(item):
+        return eval(expr, dict(item=item, **env))
+    return itertools.ifilter(eval_expr, iterable)
+
 def main():
     parser = argparse.ArgumentParser(description="Process text by running Python code as map and reduce steps.")
     parser.add_argument("-m", "--map", metavar="EXPR",
@@ -53,6 +58,8 @@ def main():
         help="Omit falsey (None, False, empty string, etc) values after map step.")
     parser.add_argument("-r", "--reduce", metavar="EXPR",
         help="A python expression to be reduced onto the input lines (use 'accum' and 'item' variables).")
+    parser.add_argument("-f", "--filter", metavar="EXPR",
+        help="A python expression to be filtered onto the input lines (use 'item' variable).")
     parser.add_argument("-a", "--accum", metavar="EXPR",
         help="A python expression with which to initialize the accumulator for reduces.")
     parser.add_argument("-i", "--in", metavar="FILEPATH",
@@ -83,6 +90,12 @@ def main():
 
     # First, strip the newlines off each line of text
     result = itertools.imap(lambda line: line.rstrip("\n"), source)
+
+    # Then, run a map step, if specified
+    if args["filter"]:
+        result = filter_python(args["filter"], result, packages)
+    elif hasattr(automodule, 'filterer'):
+        result = itertools.ifilter(automodule.filterer, result)
 
     # Then, run a map step, if specified
     if args["map"]:
