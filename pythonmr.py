@@ -59,7 +59,7 @@ def main():
     parser.add_argument("-r", "--reduce", metavar="EXPR",
         help="A python expression to be reduced onto the input lines (use 'accum' and 'item' variables).")
     parser.add_argument("-f", "--filter", metavar="EXPR",
-        help="A python expression to be filtered onto the input lines (use 'item' variable).")
+        help="A python expression to be filtered onto the input lines (use 'item' variable and return True or False).")
     parser.add_argument("-a", "--accum", metavar="EXPR",
         help="A python expression with which to initialize the accumulator for reduces.")
     parser.add_argument("-i", "--in", metavar="FILEPATH",
