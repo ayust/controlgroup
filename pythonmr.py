@@ -91,7 +91,7 @@ def main():
     # First, strip the newlines off each line of text
     result = itertools.imap(lambda line: line.rstrip("\n"), source)
 
-    # Then, run a map step, if specified
+    # Then, run a filter step, if specified
     if args["filter"]:
         result = filter_python(args["filter"], result, packages)
     elif hasattr(automodule, 'filterer'):
