@@ -96,12 +96,25 @@
                     return output;
                 }
             }
+            function safe_fun(func, args) {
+                var result = null;
+
+                try {
+                    result = func(args);
+                } catch (e) {
+                    // Everything's OK.
+                }
+
+                return result;
+            }
             var ciphers = {
                 '0 = A': alphanumeric,
                 'A = 0': reverseAlpha,
                 '65 = A (ascii)': asciiToString,
                 'A = 65 (ascii)': stringToAscii,
                 'hex to decimal': hexToDecimal,
+                'base64 decode': atob,
+                'base64 encode': btoa,
                 'a = b (1 caesar)': caesar(1),
                 'a = c (2 caesar)': caesar(2),
                 'a = d (3 caesar)': caesar(3),
@@ -172,9 +185,9 @@
                     // caesar ciphers
                     _.each(ciphers, function(func, title) {
                         things.push(React.createElement(Section, {
-                            title: title, 
-                            body: func(ciphered)
-                        })) 
+                            title: title,
+                            body: safe_fun(func, ciphered)
+                        }))
                     })
 
                     return React.createElement('div', null, things);
