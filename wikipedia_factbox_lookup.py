@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This script takes wikipedia urls on stdin and returns the value of the factbox 'key' on stdout.
+This script takes wikipedia urls on stdin and returns the value of the factbox 'key' on stdout. Scraped pages are cached.
 
 Example:
 
