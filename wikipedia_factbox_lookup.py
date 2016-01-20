@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This script takes wikipedia urls on stdin and returns the value of the factbox 'key' on stdout. Scraped pages are cached.
+This script takes wikipedia urls on stdin and returns the value of the factbox 'key' on stdout.
 
 Example:
 
@@ -62,5 +62,7 @@ def download_and_parse(wikipedia_url):
 
 results = itertools.imap(download_and_parse, sys.stdin)
 for result in results:
-	if result:
-		sys.stdout.write(u'{}\n'.format(result))
+    if result:
+        sys.stdout.write(u'{}\n'.format(result))
+    else:
+        sys.stdout.write(u'\n')
